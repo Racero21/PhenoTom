@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
         print(coin)
         for element in parameters:
             # element = element/coin
-            element = round(element/coin,2)
+            element = round(element,2)
             adjusted.append(float(element))
             print(f'{element} YOEWWWW')
         # self.db_handler.insertImagePath(batch_id, image_path, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4])
