@@ -55,36 +55,62 @@ class MainWindow(QMainWindow):
         self.updateBatchWidgetSizes()
 
     def openFileDialog(self):
-        # ask for name
+    # ask for name
         get_name, ok_pressed = QInputDialog.getText(self, 'Add new batch', 'Enter name: ')
         if ok_pressed: 
             print(get_name)
-            # get_name.setInputMode()
+            
             # Open file dialog to select image files
             file_dialog = QFileDialog()
             file_dialog.setWindowTitle("Select Image Files")
             file_dialog.setFileMode(QFileDialog.ExistingFiles)
             file_dialog.setNameFilter("Images (*.png *.jpg *.bmp *.gif *.tif)")
 
-                    # # Optionally, load the image using QImageReader
-                    # image_reader = QImageReader(file_name)
-                    # image = image_reader.read()
-                    # # Now 'image' contains the loaded image data
-            
-            # batch_name = f"Batch{self.db_handler.getBatchCount() + 1}"
-            # print(f" batch name is {batch_name}")
             batch_id = self.db_handler.insertBatch(get_name)
 
             if file_dialog.exec_() == QFileDialog.Accepted:
                 # Process selected image files
                 selected_files = file_dialog.selectedFiles()
+
+                # Display a modal to choose if a scale will be used
+                scale_used = QMessageBox.question(self, 'Use Scale', 
+                                                'Would you like to use a scale for these images?',
+                                                QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+                coin_diameter = None
+                use_one_diameter = False
+                if scale_used == QMessageBox.Yes:
+                    # Ask if the same diameter should be used for all images
+                    use_one_diameter = QMessageBox.question(self, 'Same Diameter for All Images', 
+                                                            'Do you want to use the same coin diameter for all images?',
+                                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
+                    if use_one_diameter == QMessageBox.Yes:
+                        # Ask for the diameter of the coin once
+                        coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
+                                                                            'Enter the diameter of the coin (in mm):', 
+                                                                            decimals=2)
+                        if not diameter_ok:
+                            coin_diameter = None
+
                 for file_name in selected_files:
                     print(f"Selected file: {file_name}")
                     
                     parameters = self.extractAndStoreParameters(batch_id, get_name, file_name)
-                    getCoinScale(file_name)
+
+                    # If using one diameter for all images
+                    if use_one_diameter == QMessageBox.Yes and coin_diameter is not None:
+                        getCoinScale(file_name, coin_diameter)
+                    elif scale_used == QMessageBox.Yes and use_one_diameter == QMessageBox.No:
+                        # Ask for the diameter of the coin for each image
+                        coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
+                                                                            f'Enter the diameter of the coin for {file_name} (in mm):', 
+                                                                            decimals=2)
+                        if diameter_ok:
+                            getCoinScale(file_name, coin_diameter)
+
                     # self.db_handler.insertImagePath(batch_id, file_name)
-            
+
             # self.displayStatisticsView(batch_id)
             self.displayExistingBatches()
 
