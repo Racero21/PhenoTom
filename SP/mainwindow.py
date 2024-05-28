@@ -5,6 +5,7 @@ from databasehandler import DatabaseHandler
 from batchwidget import BatchWidget
 from final import extract_parameters
 from test import getCoinScale
+import numpy as np
 import os
 
 class MainWindow(QMainWindow):
@@ -89,7 +90,7 @@ class MainWindow(QMainWindow):
                         # Ask for the diameter of the coin once
                         coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
                                                                             'Enter the diameter of the coin (in mm):', 
-                                                                            decimals=2)
+                                                                            decimals=10)
                         if not diameter_ok:
                             coin_diameter = None
 
@@ -123,12 +124,20 @@ class MainWindow(QMainWindow):
 
         parameters = extract_parameters(image_path, output_folder)
         coin = getCoinScale(image_path)
-        print(coin)
-        for element in parameters:
-            # if coin_diameter is not None:
-            #     element = element/coin
-            # element = element/coin
-            element = round(element,2)
+        print(f'coin is {coin}')
+
+
+        area_conversion_factor = (coin_diameter / coin) ** 2
+        for i, element in enumerate(parameters):
+            if i == 0:  # First element is the area
+                element = element * area_conversion_factor
+            elif i == 3:
+                element = element
+            elif i == len(parameters) - 1:  # Last element is the convex hull area
+                element = element * area_conversion_factor
+            elif coin_diameter is not None:
+                element = element * (coin_diameter / coin)  # Adjust other elements if needed
+            element = round(element, 2)
             adjusted.append(float(element))
             print(f'{element} YOEWWWW')
         # self.db_handler.insertImagePath(batch_id, image_path, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4])
