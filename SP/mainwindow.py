@@ -96,25 +96,25 @@ class MainWindow(QMainWindow):
                 for file_name in selected_files:
                     print(f"Selected file: {file_name}")
                     
-                    parameters = self.extractAndStoreParameters(batch_id, get_name, file_name)
+                    parameters = self.extractAndStoreParameters(batch_id, get_name, file_name, coin_diameter)
 
-                    # If using one diameter for all images
-                    if use_one_diameter == QMessageBox.Yes and coin_diameter is not None:
-                        getCoinScale(file_name, coin_diameter)
-                    elif scale_used == QMessageBox.Yes and use_one_diameter == QMessageBox.No:
-                        # Ask for the diameter of the coin for each image
-                        coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
-                                                                            f'Enter the diameter of the coin for {file_name} (in mm):', 
-                                                                            decimals=2)
-                        if diameter_ok:
-                            getCoinScale(file_name, coin_diameter)
+                    # # If using one diameter for all images
+                    # if use_one_diameter == QMessageBox.Yes and coin_diameter is not None:
+                    #     getCoinScale(file_name, coin_diameter)
+                    # elif scale_used == QMessageBox.Yes and use_one_diameter == QMessageBox.No:
+                    #     # Ask for the diameter of the coin for each image
+                    #     coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
+                    #                                                         f'Enter the diameter of the coin for {file_name} (in mm):', 
+                    #                                                         decimals=2)
+                    #     if diameter_ok:
+                    #         getCoinScale(file_name, coin_diameter)
 
                     # self.db_handler.insertImagePath(batch_id, file_name)
 
             # self.displayStatisticsView(batch_id)
             self.displayExistingBatches()
 
-    def extractAndStoreParameters(self, batch_id, batch_name, image_path):
+    def extractAndStoreParameters(self, batch_id, batch_name, image_path, coin_diameter):
         # set output folder for each batch
         output_folder = os.path.join("output", f"batch_{batch_name}_{batch_id}")
         os.makedirs(output_folder, exist_ok=True)
@@ -125,6 +125,8 @@ class MainWindow(QMainWindow):
         coin = getCoinScale(image_path)
         print(coin)
         for element in parameters:
+            # if coin_diameter is not None:
+            #     element = element/coin
             # element = element/coin
             element = round(element,2)
             adjusted.append(float(element))

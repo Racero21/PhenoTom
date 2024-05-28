@@ -112,7 +112,7 @@ import numpy as np
 import os
 from test import getCoinScale
 
-def extract_parameters(image_path, output_folder):
+def extract_parameters2(image_path, output_folder):
     image = cv2.imread(image_path)
     original = image.copy()
 
@@ -169,7 +169,7 @@ def extract_parameters(image_path, output_folder):
         gray_cropped = cv2.cvtColor(cropped_image, cv2.COLOR_BGR2GRAY)
 
         # Apply Canny edge detection
-        edges = cv2.Canny(gray_cropped, 100, 200)
+        edges = cv2.Canny(gray_cropped, 5, 15)
 
         # Find contours in the edges image
         edge_contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -182,6 +182,9 @@ def extract_parameters(image_path, output_folder):
 
         # Draw edge contours on the original image within the bounding box
         cv2.drawContours(original[y:y+h, x:x+w], edge_contours, -1, (0, 200, 0), 1)
+        cann = cv2.drawContours(edges, edge_contours, -1, (0, 200, 0), 1)
+        cv2.imshow("gray", gray_cropped)
+        cv2.imshow("test",cann)
 
         # Calculate object extent, eccentricity, and convex hull area for the edge contours
         extent_x = w
@@ -220,90 +223,90 @@ def extract_parameters(image_path, output_folder):
 # output_folder = 'output_folder_path'
 # extract_parameters(image_path, output_folder)
 
-# import cv2
-# import numpy as np
-# import os
-# from test import getCoinScale
+import cv2
+import numpy as np
+import os
+from test import getCoinScale
 
-# def extract_parameters(image_path, output_folder):
-#     image = cv2.imread(image_path)
-#     original = image.copy()
+def extract_parameters(image_path, output_folder):
+    image = cv2.imread(image_path)
+    original = image.copy()
 
-#     # Convert the image to HSV
-#     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    # Convert the image to HSV
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     
-#     # Define the lower and upper bounds for the green color in HSV
-#     lower_green = np.array([35, 35, 35])
-#     upper_green = np.array([85, 255, 255])
-#     yellows = np.array([255,255,0])
+    # Define the lower and upper bounds for the green color in HSV
+    lower_green = np.array([33, 33, 33])
+    upper_green = np.array([85, 255, 255])
+    yellows = np.array([255,255,0])
     
-#     # Create a mask to extract the green regions
-#     green_mask = cv2.inRange(hsv, lower_green, upper_green, yellows)
+    # Create a mask to extract the green regions
+    green_mask = cv2.inRange(hsv, lower_green, upper_green, yellows)
 
-#     # Find contours in the binary green mask
-#     contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # Find contours in the binary green mask
+    contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-#     # Calculate centroids of the contours
-#     centroids = []
-#     valid_contours = []
-#     for contour in contours:
-#         M = cv2.moments(contour)
-#         if M["m00"] != 0:
-#             cX = int(M["m10"] / M["m00"])
-#             cY = int(M["m01"] / M["m00"])
-#             centroids.append((cX, cY))
-#             valid_contours.append(contour)
+    # Calculate centroids of the contours
+    centroids = []
+    valid_contours = []
+    for contour in contours:
+        M = cv2.moments(contour)
+        if M["m00"] != 0:
+            cX = int(M["m10"] / M["m00"])
+            cY = int(M["m01"] / M["m00"])
+            centroids.append((cX, cY))
+            valid_contours.append(contour)
 
-#     # Convert centroids list to a NumPy array
-#     centroids = np.array(centroids)
+    # Convert centroids list to a NumPy array
+    centroids = np.array(centroids)
 
-#     # Filter out outlier contours based on centroid positions
-#     filtered_contours = []
-#     if len(centroids) > 0:
-#         mean_centroid = np.mean(centroids, axis=0)
-#         std_dev_centroid = np.std(centroids, axis=0)
-#         threshold = 2  # Threshold for outlier detection
+    # Filter out outlier contours based on centroid positions
+    filtered_contours = []
+    if len(centroids) > 0:
+        mean_centroid = np.mean(centroids, axis=0)
+        std_dev_centroid = np.std(centroids, axis=0)
+        threshold = 2  # Threshold for outlier detection
 
-#         for i, contour in enumerate(valid_contours):
-#             distance = np.linalg.norm(centroids[i] - mean_centroid)
-#             if distance < threshold * np.linalg.norm(std_dev_centroid):
-#                 filtered_contours.append(contour)
+        for i, contour in enumerate(valid_contours):
+            distance = np.linalg.norm(centroids[i] - mean_centroid)
+            if distance < threshold * np.linalg.norm(std_dev_centroid):
+                filtered_contours.append(contour)
     
-#     # Calculate and sum up the area for each filtered contour
-#     total_projected_area = 0
-#     for contour in filtered_contours:
-#         area = cv2.contourArea(contour)
-#         total_projected_area += area
+    # Calculate and sum up the area for each filtered contour
+    total_projected_area = 0
+    for contour in filtered_contours:
+        area = cv2.contourArea(contour)
+        total_projected_area += area
 
-#     # Draw filtered contours on the original image
-#     cv2.drawContours(original, filtered_contours, -1, (0, 255, 0), 2)
+    # Draw filtered contours on the original image
+    cv2.drawContours(original, filtered_contours, -1, (0, 255, 0), 2)
 
-#     # Calculate bounding rectangle for the combined contours
-#     if len(filtered_contours) > 0:
-#         x, y, w, h = cv2.boundingRect(np.concatenate(filtered_contours))
-#         cv2.rectangle(original, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    # Calculate bounding rectangle for the combined contours
+    if len(filtered_contours) > 0:
+        x, y, w, h = cv2.boundingRect(np.concatenate(filtered_contours))
+        cv2.rectangle(original, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
-#     extent_x = w
-#     extent_y = h
+    extent_x = w
+    extent_y = h
 
-#     # if len(filtered_contours) >= 5:
-#     ellipse = cv2.fitEllipse(np.concatenate(filtered_contours))
-#     eccentricity = float(np.sqrt(1 - (ellipse[1][0] ** 2) / (ellipse[1][1] ** 2)))
-#     cv2.ellipse(original, ellipse, (0, 0, 255), 2)
-#     # else:
-#         # eccentricity = 0
+    # if len(filtered_contours) >= 5:
+    ellipse = cv2.fitEllipse(np.concatenate(filtered_contours))
+    eccentricity = float(np.sqrt(1 - (ellipse[1][0] ** 2) / (ellipse[1][1] ** 2)))
+    cv2.ellipse(original, ellipse, (0, 0, 255), 2)
+    # else:
+        # eccentricity = 0
 
-#     hull = cv2.convexHull(np.concatenate(filtered_contours))
-#     hull_area = cv2.contourArea(hull)
-#     cv2.drawContours(original, [hull], 0, (255, 0, 0), 2)
+    hull = cv2.convexHull(np.concatenate(filtered_contours))
+    hull_area = cv2.contourArea(hull)
+    cv2.drawContours(original, [hull], 0, (255, 0, 0), 2)
 
-#     output_file_params = os.path.join(output_folder, f"contours_{os.path.basename(image_path)}")
-#     cv2.imwrite(output_file_params, original)
+    output_file_params = os.path.join(output_folder, f"contours_{os.path.basename(image_path)}")
+    cv2.imwrite(output_file_params, original)
 
-#     coin = getCoinScale(image_path)
+    coin = getCoinScale(image_path)
 
-#     print(f"Total Projected Area: {total_projected_area}, Extent X: {extent_x}, Extent Y: {extent_y}, Eccentricity: {eccentricity}, Hull Area: {hull_area}")
-#     return [total_projected_area, extent_x, extent_y, eccentricity, hull_area]
+    print(f"Total Projected Area: {total_projected_area}, Extent X: {extent_x}, Extent Y: {extent_y}, Eccentricity: {eccentricity}, Hull Area: {hull_area}")
+    return [total_projected_area, extent_x, extent_y, eccentricity, hull_area]
 
 # Example usage
 # image_path = 'path_to_your_image.jpg'
