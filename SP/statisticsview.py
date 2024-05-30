@@ -8,12 +8,13 @@ class StatisticsView(QWidget):
     def __init__(self, batch_id, batch_name, parameters, parent=None):
         super().__init__(parent)
 
+        self.setWindowTitle(f"Data for Batch {batch_name}")
         self.batch_id = batch_id
         self.batch_name = batch_name
         self.parameters = parameters
 
         # Add a label for batch information
-        self.statistics_label = QLabel(f"Data for Batch {batch_name}")
+        # self.statistics_label = QLabel(f"Data for Batch {batch_name}")
 
         # Dropdown menu for parameter selection
         self.parameter_selector = QComboBox()
@@ -22,14 +23,14 @@ class StatisticsView(QWidget):
 
         # Layout for the statistics view
         layout = QVBoxLayout()
-        layout.addWidget(self.statistics_label)
+        # layout.addWidget(self.statistics_label)
 
         # export button
-        self.export_button = QPushButton('Export')
+        self.export_button = QPushButton('Export as CSV')
         self.export_button.clicked.connect(self.exportToCSV) 
 
         # Add a button to copy the selected column to the clipboard
-        self.copy_column_button = QPushButton('Copy Column')
+        self.copy_column_button = QPushButton('Copy Column to Clipboard')
         self.copy_column_button.clicked.connect(self.copyColumnToClipboard)
         
         # Create a Matplotlib figure and canvas

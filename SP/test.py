@@ -4,79 +4,79 @@ import numpy as np
 # image = cv2.imread("C:\\Users\\Ralph\\Downloads\\proj\\plant2.jpg")
 # image = cv2.imread("C:\\Users\\Ralph\\Downloads\\download.jpg")
 # image = cv2.imread("C:\\Users\\edwin\\Downloads\\pics\\2024 Tomato Pictures for Ralph\\p3.jpg")
-image = cv2.imread("C:\\Users\\edwin\\Desktop\\PhenoTom\\new\\PhenoTom\\SP\\2024 Tomato Pictures for Ralph\\20240326_092617.jpg")
-# # Get the dimensions of the image
-# height, width, _ = image.shape
-hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+# image = cv2.imread("C:\\Users\\edwin\\Desktop\\PhenoTom\\new\\PhenoTom\\SP\\2024 Tomato Pictures for Ralph\\20240326_092617.jpg")
+# # # Get the dimensions of the image
+# # height, width, _ = image.shape
+# hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     
-# Define the lower and upper bounds for the green color in HSV
-lower_green = np.array([33, 33, 33])
-upper_green = np.array([85, 255, 255])
-yellows = np.array([255,255,0])
+# # Define the lower and upper bounds for the green color in HSV
+# lower_green = np.array([33, 33, 33])
+# upper_green = np.array([85, 255, 255])
+# yellows = np.array([255,255,0])
 
-# Create a mask to extract the green regions
-green_mask = cv2.inRange(hsv, lower_green, upper_green, yellows)
+# # Create a mask to extract the green regions
+# green_mask = cv2.inRange(hsv, lower_green, upper_green, yellows)
 
-# Find contours in the binary green mask
-contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+# # Find contours in the binary green mask
+# contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-# Calculate centroids of the contours
-centroids = []
-valid_contours = []
-for contour in contours:
-    M = cv2.moments(contour)
-    if M["m00"] != 0:
-        cX = int(M["m10"] / M["m00"])
-        cY = int(M["m01"] / M["m00"])
-        centroids.append((cX, cY))
-        valid_contours.append(contour)
+# # Calculate centroids of the contours
+# centroids = []
+# valid_contours = []
+# for contour in contours:
+#     M = cv2.moments(contour)
+#     if M["m00"] != 0:
+#         cX = int(M["m10"] / M["m00"])
+#         cY = int(M["m01"] / M["m00"])
+#         centroids.append((cX, cY))
+#         valid_contours.append(contour)
 
-# Convert centroids list to a NumPy array
-centroids = np.array(centroids)
+# # Convert centroids list to a NumPy array
+# centroids = np.array(centroids)
 
-# Filter out outlier contours based on centroid positions
-filtered_contours = []
-if len(centroids) > 0:
-    mean_centroid = np.mean(centroids, axis=0)
-    std_dev_centroid = np.std(centroids, axis=0)
-    threshold = 2  # Threshold for outlier detection
+# # Filter out outlier contours based on centroid positions
+# filtered_contours = []
+# if len(centroids) > 0:
+#     mean_centroid = np.mean(centroids, axis=0)
+#     std_dev_centroid = np.std(centroids, axis=0)
+#     threshold = 2  # Threshold for outlier detection
 
-    for i, contour in enumerate(valid_contours):
-        distance = np.linalg.norm(centroids[i] - mean_centroid)
-        if distance < threshold * np.linalg.norm(std_dev_centroid):
-            filtered_contours.append(contour)
+#     for i, contour in enumerate(valid_contours):
+#         distance = np.linalg.norm(centroids[i] - mean_centroid)
+#         if distance < threshold * np.linalg.norm(std_dev_centroid):
+#             filtered_contours.append(contour)
 
-# Calculate and sum up the area for each filtered contour
-total_area = 0
-total_perimeter = 0
-for contour in filtered_contours:
-    area = cv2.contourArea(contour)
-    perimeter = cv2.arcLength(contour, True)
-    total_area += area
-    total_perimeter += perimeter
-# gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
-
-# _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
-
-# contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
+# # Calculate and sum up the area for each filtered contour
 # total_area = 0
 # total_perimeter = 0
-# for contour in contours:
+# for contour in filtered_contours:
 #     area = cv2.contourArea(contour)
 #     perimeter = cv2.arcLength(contour, True)
 #     total_area += area
 #     total_perimeter += perimeter
-    # if perimeter == 0:
-    #     circularity = 0
-    # else:
-    #     circularity = 4 * np.pi * (area / (perimeter * perimeter))
+# # gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
 
-circularity = 4 * np.pi * (total_area / (total_perimeter * total_perimeter))
+# # _, binary = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+
+# # contours, _ = cv2.findContours(binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+# # total_area = 0
+# # total_perimeter = 0
+# # for contour in contours:
+# #     area = cv2.contourArea(contour)
+# #     perimeter = cv2.arcLength(contour, True)
+# #     total_area += area
+# #     total_perimeter += perimeter
+#     # if perimeter == 0:
+#     #     circularity = 0
+#     # else:
+#     #     circularity = 4 * np.pi * (area / (perimeter * perimeter))
+
+# circularity = 4 * np.pi * (total_area / (total_perimeter * total_perimeter))
 
 
 
-print(f'Area: {total_area}, Perimeter: {total_perimeter}, Circularity: {circularity}')
+# print(f'Area: {total_area}, Perimeter: {total_perimeter}, Circularity: {circularity}')
 
 # # Calculate the center coordinates of the image
 # center_x = width // 2

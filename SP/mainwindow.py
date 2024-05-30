@@ -98,18 +98,11 @@ class MainWindow(QMainWindow):
                 coin_diameter = None
                 use_one_diameter = False
                 if scale_used == QMessageBox.Yes:
-                    # Ask if the same diameter should be used for all images
-                    use_one_diameter = QMessageBox.question(self, 'Same Diameter for All Images', 
-                                                            'Do you want to use the same coin diameter for all images?',
-                                                            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
-
-                    if use_one_diameter == QMessageBox.Yes:
-                        # Ask for the diameter of the coin once
-                        coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
-                                                                            'Enter the diameter of the coin (in mm):', 
-                                                                            decimals=10)
-                        if not diameter_ok:
-                            coin_diameter = None
+                    coin_diameter, diameter_ok = QInputDialog.getDouble(self, 'Coin Diameter', 
+                                                                        'Enter the diameter of the coin (in mm):', 
+                                                                        decimals=10)
+                    if not diameter_ok:
+                        coin_diameter = None
 
                 for file_name in selected_files:
                     print(f"Selected file: {file_name}")
@@ -133,33 +126,42 @@ class MainWindow(QMainWindow):
             self.displayExistingBatches()
 
     def extractAndStoreParameters(self, batch_id, batch_name, image_path, coin_diameter):
-        # set output folder for each batch
+        # Set output folder for each batch
         output_folder = os.path.join("output", f"batch_{batch_name}_{batch_id}")
         os.makedirs(output_folder, exist_ok=True)
 
         adjusted = []
 
         parameters = extract_parameters(image_path, output_folder)
-        coin = getCoinScale(image_path)
-        print(f'coin is {coin}')
 
+        if coin_diameter is not None:
+            coin = getCoinScale(image_path)
+            print(f'coin is {coin}')
+            area_conversion_factor = (coin_diameter / coin) ** 2
+        else:
+            area_conversion_factor = None
 
-        area_conversion_factor = (coin_diameter / coin) ** 2
         for i, element in enumerate(parameters):
             if i == 0:  # First element is the area
-                element = element * area_conversion_factor
-            elif i == 3:
-                element = element
+                if area_conversion_factor is not None:
+                    element = element * area_conversion_factor
             elif i == len(parameters) - 1:  # Last element is the convex hull area
-                element = element * area_conversion_factor
+                if area_conversion_factor is not None:
+                    element = element * area_conversion_factor
             elif coin_diameter is not None:
                 element = element * (coin_diameter / coin)  # Adjust other elements if needed
             element = round(element, 2)
             adjusted.append(float(element))
             print(f'{element} YOEWWWW')
-        # self.db_handler.insertImagePath(batch_id, image_path, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4])
+
+        # Insert adjusted parameters into the database
         self.db_handler.insertImagePath(batch_id, image_path, adjusted[0], adjusted[1], adjusted[2], adjusted[3], adjusted[4])
         print(f" \n FROM EXTRACTION ----------->>>>  {adjusted[0]} {adjusted[1]} {adjusted[2]} {adjusted[3]} {adjusted[4]} ")
+
+        mess = QMessageBox()
+        mess.setWindowTitle("Success!!!")
+        mess.setText(f'Successfully processed the selected images, you may view them on \n{output_folder}')
+        mess.exec()
         return parameters
 
     def displayStatisticsView(self, batch_id, batch_name):
