@@ -274,9 +274,14 @@ def extract_parameters(image_path, output_folder):
     
     # Calculate and sum up the area for each filtered contour
     total_projected_area = 0
+    total_perimeter = 0
     for contour in filtered_contours:
         area = cv2.contourArea(contour)
+        perimeter = cv2.arcLength(contour, True)
         total_projected_area += area
+        total_perimeter += perimeter
+
+    circularity = 4 * np.pi * (total_projected_area / (total_perimeter * total_perimeter))
 
     # Draw filtered contours on the original image
     cv2.drawContours(original, filtered_contours, -1, (0, 255, 0), 2)
@@ -305,8 +310,8 @@ def extract_parameters(image_path, output_folder):
 
     coin = getCoinScale(image_path)
 
-    print(f"Total Projected Area: {total_projected_area}, Extent X: {extent_x}, Extent Y: {extent_y}, Eccentricity: {eccentricity}, Hull Area: {hull_area}")
-    return [total_projected_area, extent_x, extent_y, eccentricity, hull_area]
+    print(f"Total Projected Area: {total_projected_area}, Extent X: {extent_x}, Extent Y: {extent_y}, Circularity: {circularity}, Hull Area: {hull_area}")
+    return [total_projected_area, extent_x, extent_y, circularity, hull_area]
 
 # Example usage
 # image_path = 'path_to_your_image.jpg'

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QFileDialog, QApplication
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QFileDialog, QApplication, QMessageBox
 from PySide6.QtGui import QClipboard
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -17,7 +17,7 @@ class StatisticsView(QWidget):
 
         # Dropdown menu for parameter selection
         self.parameter_selector = QComboBox()
-        self.parameter_selector.addItems(['Projected Area', 'Extent X', 'Extent Y', 'Eccentricity', 'Convex Hull Area'])
+        self.parameter_selector.addItems(['Projected Area', 'Extent X', 'Extent Y', 'Circularity', 'Convex Hull Area'])
         self.parameter_selector.currentIndexChanged.connect(self.updatePlot)
 
         # Layout for the statistics view
@@ -52,7 +52,7 @@ class StatisticsView(QWidget):
     def updatePlot(self):
         # Extract selected parameter for plotting
         selected_parameter = self.parameter_selector.currentText()
-        parameter_index = {'Projected Area': 3, 'Extent X': 4, 'Extent Y': 5, 'Eccentricity': 6, 'Convex Hull Area': 7}[selected_parameter]
+        parameter_index = {'Projected Area': 3, 'Extent X': 4, 'Extent Y': 5, 'Circularity': 6, 'Convex Hull Area': 7}[selected_parameter]
         parameter_values = [parameter[parameter_index] for parameter in self.parameters]
 
         # Clear existing plot
@@ -81,7 +81,7 @@ class StatisticsView(QWidget):
                 csv_writer = csv.writer(csvfile)
 
                 # Write header
-                header = ['Image Index', 'Projected Area', 'Extent X', 'Extent Y', 'Eccentricity', 'Convex Hull Area']
+                header = ['Image Index', 'Projected Area', 'Extent X', 'Extent Y', 'Circularity', 'Convex Hull Area']
                 csv_writer.writerow(header)
 
                 # Write data rows
@@ -89,7 +89,10 @@ class StatisticsView(QWidget):
                     row = [i + 1] + [parameter[j] for j in range(3, 8)]  # Indices 3 to 7 are the parameters
                     csv_writer.writerow(row)
 
-            print(f"Data exported to {file_path}")
+            msgBox = QMessageBox()
+            msgBox.setText(f"Data exported to {file_path}")
+            msgBox.exec()
+            # print(f"Data exported to {file_path}")
 
     def copyColumnToClipboard(self):
         # Get the selected column index

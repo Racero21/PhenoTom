@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QPushButton, QFileDialog, QVBoxLayout, QHBoxLayout, QWidget, QScrollArea, QInputDialog, QMessageBox, QGridLayout, QSizePolicy
+from PySide6.QtWidgets import QMainWindow, QPushButton, QFileDialog, QVBoxLayout, QHBoxLayout, QWidget, QScrollArea, QInputDialog, QMessageBox, QGridLayout, QSizePolicy, QLineEdit
 from PySide6.QtCore import Qt
 from statisticsview import StatisticsView
 from databasehandler import DatabaseHandler
@@ -12,7 +12,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Tomato Phenotyping System")
+        self.setWindowTitle("TomatoVision")
 
         # Create a button
         self.button = QPushButton("Add images")
@@ -28,6 +28,7 @@ class MainWindow(QMainWindow):
 
         # Create a layout
         layout = QVBoxLayout(central_widget)
+        layout.addWidget(self.createSearchBar())
         layout.addWidget(self.button)
         layout.addLayout(self.batch_layout)
         layout.addWidget(scroll_area)
@@ -54,6 +55,22 @@ class MainWindow(QMainWindow):
 
     def handleResize(self, event):
         self.updateBatchWidgetSizes()
+
+    def createSearchBar(self):
+        search_bar = QLineEdit()
+        search_bar.setPlaceholderText("Search...")
+        search_bar.textChanged.connect(self.filterBatchWidgets)
+        return search_bar
+
+    def filterBatchWidgets(self, text):
+        text = text.lower()
+        print(self.batch_layout.count())
+        for i in range(self.batch_layout.count()):
+            widget = self.batch_layout.itemAt(i).widget()
+            if text in widget.batch_name.lower():
+                widget.show()
+            else:
+                widget.hide()
 
     def openFileDialog(self):
     # ask for name
@@ -196,7 +213,7 @@ class MainWindow(QMainWindow):
             # self.batch_layout.addChildWidget(batch_widget)
         
         self.updateBatchWidgetSizes()
-    
+
     def updateBatchWidgetSizes(self):
         window_size = self.size()
         desired_width = max(int(window_size.width() * 0.05), 200)

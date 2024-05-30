@@ -3,7 +3,8 @@ import numpy as np
 
 # image = cv2.imread("C:\\Users\\Ralph\\Downloads\\proj\\plant2.jpg")
 # image = cv2.imread("C:\\Users\\Ralph\\Downloads\\download.jpg")
-image = cv2.imread("C:\\Users\\Ralph\\Downloads\\pics\\2024 Tomato Pictures for Ralph\\p3.jpg")
+# image = cv2.imread("C:\\Users\\edwin\\Downloads\\pics\\2024 Tomato Pictures for Ralph\\p3.jpg")
+image = cv2.imread("C:\\Users\\edwin\\Desktop\\PhenoTom\\new\\PhenoTom\\SP\\2024 Tomato Pictures for Ralph\\20240326_092617.jpg")
 # # Get the dimensions of the image
 # height, width, _ = image.shape
 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
